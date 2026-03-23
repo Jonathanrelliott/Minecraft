@@ -1,0 +1,200 @@
+options:
+    prefix: &8• &bʜᴏᴍᴇ &8»
+    maxhomes: 5
+
+function open_home_gui(p: player):
+    set {_max} to {@maxhomes}
+    set {_inv} to chest inventory with 4 rows named "&8• &bʏᴏᴜʀ ʜᴏᴍᴇs"
+    set {_slots::*} to 12, 13, 14, 15, 16
+    set {_i} to 0
+
+    loop {homes::%uuid of {_p}%::*}:
+        add 1 to {_i}
+        if {_i} > size of {_slots::*}:
+            stop
+        set {_name} to loop-index
+        replace "homes::%uuid of {_p}%::" with "" in {_name}
+        set {_item} to light blue bed named "&e%{_name}%" with lore "&7ᴄʟɪᴄᴋ ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ"
+        set slot {_slots::%{_i}%} of {_inv} to {_item}
+        set slot ({_slots::%{_i}%} + 9) of {_inv} to light blue dye named "&cᴅᴇʟᴇᴛᴇ" with lore "&7ᴄʟɪᴄᴋ ᴛᴏ ᴅᴇʟᴇᴛᴇ &e%{_name}%"
+
+    while {_i} < {_max}:
+        add 1 to {_i}
+        if {_i} > size of {_slots::*}:
+            stop
+        set {_item} to white bed named "&7ꜰʀᴇᴇ sʟᴏᴛ" with lore "&7ᴄʟɪᴄᴋ ᴛᴏ sᴇᴛ ᴀ ɴᴇᴡ ʜᴏᴍᴇ"
+        set slot {_slots::%{_i}%} of {_inv} to {_item}
+        set slot ({_slots::%{_i}%} + 9) of {_inv} to gray dye named "&7ɴᴏ ʜᴏᴍᴇ" with lore "&7ɴᴏ ʜᴏᴍᴇ sᴇᴛ ʜᴇʀᴇ!"
+
+    open {_inv} to {_p}
+
+command /sethome <text>:
+    trigger:
+        set {_max} to {@maxhomes}
+        set {_count} to size of {homes::%uuid of player%::*}
+        if {_count} >= {_max}:
+            send "{@prefix} &cʏᴏᴜ ᴀʟʀᴇᴀᴅʏ ʜᴀᴠᴇ ᴛʜᴇ ᴍᴀxɪᴍᴜᴍ ᴏꜰ &e%{_max}% &cʜᴏᴍᴇs!"
+            stop
+        if {homes::%uuid of player%::%arg-1%} is set:
+            send "{@prefix} &cᴀ ʜᴏᴍᴇ ɴᴀᴍᴇᴅ &e%arg-1% &cᴀʟʀᴇᴀᴅʏ ᴇxɪsᴛs!"
+            stop
+        set {homes::%uuid of player%::%arg-1%} to location of player
+        send "{@prefix} &aʜᴏᴍᴇ &e%arg-1% &ᴀʜᴀs ʙᴇᴇɴ sᴇᴛ! (&7%{_count}+1%/&7%{_max}% &ᴀᴜsᴇᴅ)"
+        open_home_gui(player)
+
+command /delhome <text>:
+    trigger:
+        if {homes::%uuid of player%::%arg-1%} is not set:
+            send "{@prefix} &cɴᴏ ʜᴏᴍᴇ ɴᴀᴍᴇᴅ &e%arg-1% &ᴄꜰᴏᴜɴᴅ!"
+            stop
+        delete {homes::%uuid of player%::%arg-1%}
+        send "{@prefix} &aʜᴏᴍᴇ &e%arg-1% &ᴀʜᴀs ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ."
+        open_home_gui(player)
+
+command /home [<text>]:
+    trigger:
+        if arg-1 is set:
+            if {homes::%uuid of player%::%arg-1%} is not set:
+                send "{@prefix} &cɴᴏ ʜᴏᴍᴇ ɴᴀᴍᴇᴅ &e%arg-1% &ᴄꜰᴏᴜɴᴅ!"
+                stop
+            set {_target} to {homes::%uuid of player%::%arg-1%}
+            set {_homename} to arg-1
+            set {hometp::%player%} to 5
+            set {hometp-loc::%player%} to {_target}
+            set {hometp-name::%player%} to {_homename}
+            set {hometp-lastloc::%player%} to location of player
+            send "{@prefix} &7ᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &b5 &7sᴇᴄᴏɴᴅs ᴛᴏ ʜᴏᴍᴇ &e%{_homename}%&7. &8(ᴅᴏɴ'ᴛ ᴍᴏᴠᴇ!)" to player
+            send action bar "&bᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f5 &bꜱᴇᴄᴏɴᴅꜱ..." to player
+            loop 5 times:
+                wait 1 second
+                if {hometp::%player%} is not set:
+                    stop
+                subtract 1 from {hometp::%player%}
+                if {hometp::%player%} > 0:
+                    send action bar "&bᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f%{hometp::%player%}% &bꜱᴇᴄᴏɴᴅꜱ..." to player
+                else:
+                    teleport player to {hometp-loc::%player%}
+                    set {_homename2} to {hometp-name::%player%}
+                    send action bar "&aᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!" to player
+                    send "{@prefix} &aᴛᴇʟᴇᴘᴏʀᴛᴇᴅ ᴛᴏ ʜᴏᴍᴇ &e%{_homename2}%&a." to player
+                    delete {hometp::%player%}
+                    delete {hometp-loc::%player%}
+                    delete {hometp-name::%player%}
+                    delete {hometp-lastloc::%player%}
+                    stop
+            stop
+        else:
+            open_home_gui(player)
+
+on player move:
+    if {hometp::%player%} is set:
+        set {_oldloc} to {hometp-lastloc::%player%}
+        if {_oldloc} is set:
+            if x-coordinate of location of player is not x-coordinate of {_oldloc}:
+                send action bar "&cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ (ᴍᴏᴠᴇᴅ)!" to player
+                send "{@prefix} &cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜꜱᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ!" to player
+                delete {hometp::%player%}
+                delete {hometp-loc::%player%}
+                delete {hometp-name::%player%}
+                delete {hometp-lastloc::%player%}
+            else if y-coordinate of location of player is not y-coordinate of {_oldloc}:
+                send action bar "&cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ (ᴍᴏᴠᴇᴅ)!" to player
+                send "{@prefix} &cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜꜱᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ!" to player
+                delete {hometp::%player%}
+                delete {hometp-loc::%player%}
+                delete {hometp-name::%player%}
+                delete {hometp-lastloc::%player%}
+            else if z-coordinate of location of player is not z-coordinate of {_oldloc}:
+                send action bar "&cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ (ᴍᴏᴠᴇᴅ)!" to player
+                send "{@prefix} &cᴛᴇʟᴇᴘᴏʀᴛ ᴄᴀɴᴄᴇʟʟᴇᴅ ʙᴇᴄᴀᴜꜱᴇ ʏᴏᴜ ᴍᴏᴠᴇᴅ!" to player
+                delete {hometp::%player%}
+                delete {hometp-loc::%player%}
+                delete {hometp-name::%player%}
+                delete {hometp-lastloc::%player%}
+        set {hometp-lastloc::%player%} to location of player
+
+on inventory click:
+    if name of event-inventory is "&8• &bʏᴏᴜʀ ʜᴏᴍᴇs":
+        cancel event
+        set {_item} to event-item
+        if {_item} is not set:
+            stop
+        set {_name} to name of {_item}
+        replace "&e" with "" in {_name}
+        replace "&7ꜰʀᴇᴇ sʟᴏᴛ" with "" in {_name}
+        replace "&r" with "" in {_name}
+        replace "&f" with "" in {_name}
+        replace "&7" with "" in {_name}
+        replace " " with "" in {_name}
+        if type of {_item} is light blue bed:
+            if {homes::%uuid of event-player%::%{_name}%} is set:
+                set {_target} to {homes::%uuid of event-player%::%{_name}%}
+                set {_homename} to {_name}
+                set {hometp::%event-player%} to 5
+                set {hometp-loc::%event-player%} to {_target}
+                set {hometp-name::%event-player%} to {_homename}
+                set {hometp-lastloc::%event-player%} to location of event-player
+                close event-player's inventory
+                send "{@prefix} &7ᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &b5 &7sᴇᴄᴏɴᴅs ᴛᴏ ʜᴏᴍᴇ &e%{_homename}%&7. &8(ᴅᴏɴ'ᴛ ᴍᴏᴠᴇ!)" to event-player
+                send action bar "&bᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f5 &bꜱᴇᴄᴏɴᴅꜱ..." to event-player
+                loop 5 times:
+                    wait 1 second
+                    if {hometp::%event-player%} is not set:
+                        stop
+                    subtract 1 from {hometp::%event-player%}
+                    if {hometp::%event-player%} > 0:
+                        send action bar "&bᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f%{hometp::%event-player%}% &bꜱᴇᴄᴏɴᴅꜱ..." to event-player
+                    else:
+                        teleport event-player to {hometp-loc::%event-player%}
+                        set {_homename2} to {hometp-name::%event-player%}
+                        send action bar "&aᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!" to event-player
+                        send "{@prefix} &aᴛᴇʟᴇᴘᴏʀᴛᴇᴅ ᴛᴏ ʜᴏᴍᴇ &e%{_homename2}%&a." to event-player
+                        delete {hometp::%event-player%}
+                        delete {hometp-loc::%event-player%}
+                        delete {hometp-name::%event-player%}
+                        delete {hometp-lastloc::%event-player%}
+                        stop
+                stop
+            else:
+                send "{@prefix} &cᴛʜɪꜱ ʜᴏᴍᴇ ɴᴏ ʟᴏɴɢᴇʀ ᴇxɪꜱᴛꜱ." to event-player
+            stop
+        if type of {_item} is white bed:
+            close event-player's inventory
+            send "{@prefix} &7ᴘʟᴇᴀꜱᴇ ᴇɴᴛᴇʀ ᴀ ɴᴀᴍᴇ ꜰᴏʀ ʏᴏᴜʀ ɴᴇᴡ ʜᴏᴍᴇ (&ᴄᴄᴀɴᴄᴇʟ&7 ᴛᴏ ᴄᴀɴᴄᴇʟ):"
+            set {home-setting::%event-player%} to true
+        if type of {_item} is light blue dye:
+            set {_lore::*} to lore of {_item}
+            set {_home} to {_lore::1}
+            replace "&7ᴄʟɪᴄᴋ ᴛᴏ ᴅᴇʟᴇᴛᴇ &e" with "" in {_home}
+            replace "&r" with "" in {_home}
+            replace "&f" with "" in {_home}
+            replace "&7" with "" in {_home}
+            replace " " with "" in {_home}
+            if {_home} is set:
+                if {_home} is not "":
+                    close event-player's inventory
+                    execute player command "delhome %{_home}%"
+                else:
+                    send "{@prefix} &cᴇʀʀᴏʀ: ʜᴏᴍᴇ ᴄᴏᴜʟᴅ ɴᴏᴛ ʙᴇ ᴅᴇᴛᴇʀᴍɪɴᴇᴅ."
+            else:
+                send "{@prefix} &cᴇʀʀᴏʀ: ʜᴏᴍᴇ ᴄᴏᴜʟᴅ ɴᴏᴛ ʙᴇ ᴅᴇᴛᴇʀᴍɪɴᴇᴅ."
+            stop
+
+on chat:
+    if {home-setting::%player%} is true:
+        cancel event
+        delete {home-setting::%player%}
+        if message is "cancel":
+            send "{@prefix} &cʜᴏᴍᴇ sᴇᴛᴛɪɴɢ ᴄᴀɴᴄᴇʟʟᴇᴅ."
+            stop
+        set {_max} to {@maxhomes}
+        set {_count} to size of {homes::%uuid of player%::*}
+        if {_count} >= {_max}:
+            send "{@prefix} &cʏᴏᴜ ᴀʟʀᴇᴀᴅʏ ʜᴀᴠᴇ ᴛʜᴇ ᴍᴀxɪᴍᴜᴍ ᴏꜰ &e%{_max}% &cʜᴏᴍᴇs!"
+            stop
+        if {homes::%uuid of player%::%message%} is set:
+            send "{@prefix} &cᴀ ʜᴏᴍᴇ ɴᴀᴍᴇᴅ &e%message% &cᴀʟʀᴇᴀᴅʏ ᴇxɪsᴛs!"
+            stop
+        set {homes::%uuid of player%::%message%} to location of player
+        send "{@prefix} &aʜᴏᴍᴇ &e%message% &ᴀʜᴀs ʙᴇᴇɴ sᴇᴛ! (&7%{_count}+1%/&7%{_max}% &ᴀᴜsᴇᴅ)"
+        open_home_gui(player)
